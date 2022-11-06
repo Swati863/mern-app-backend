@@ -1,10 +1,14 @@
 const express = require("express")
+const cors = require("cors")
 const app = express();
-app.use(express.json());
 
+app.use(cors())
+app.use(express.json());
 const {UserModel} = require("./models/UserModel")
 const {connection } = require("./config/db")
 const bcrypt = require('bcrypt');
+require("dotenv").config()
+const jwt = require("jsonwebtoken")
 const { authentication } = require("./middleware/authentication");
 const { todoRouter } = require("./router/todo.router");
 
@@ -34,14 +38,15 @@ app.post("/signup",async (req,res)=>{
                 email,
                 password : hash
             })
-        }
+        
         try{
             await new_user.save()
-            res.send("Sign ip successfull")
+            res.send("Sign up successfull")
         }
         catch(err){
             res.send("something went wrong,Please try again")
         }
+    }
     });   
   
 })
@@ -56,9 +61,12 @@ app.post("/login",async(req,res)=>{
      if(err){
       res.send({"msg":"Something went wrong,try agaon later"})  
      }
+
      if(result){
         const token = jwt.sign({user_id},process.env.KEY);
-        res.send({message:"Login successfull",token})
+        res.send({"message":"Login successfull",
+        "token": token 
+    })
      }
      else{
         res.send({"msg":"Login failed"})
